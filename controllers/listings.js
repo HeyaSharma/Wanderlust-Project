@@ -59,22 +59,19 @@ module.exports.renderEditForm = async(req,res) =>{
      res.render("listings/edit.ejs", {listing, originalImageUrl});
 };
 
-module.exports.updateListing = async (req,res) => {
+module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
-    let image = {filename: "listingimage",
-       url: req.body.listing.image,
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+    // console.log(listing.image.url);
+    if (typeof req.file !== "undefined") {
+        let url = req.file.path;
+        let filename = req.file.filename;
+        listing.image = { url, filename };
+        await listing.save();
     }
-    let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing,image:image});
-   
-    if(typeof req.file !=="undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = { url , filename };
-    await listing.save();
-    }
-    req.flash("success", "Listing Updated!");
-    res.redirect(`/listings/${id}`);
-};
+    req.flash("success", "Listing Updated Successfully!");
+    res.redirect(`/listings/${id}`); 
+}
 
 module.exports.destroyListing = async (req,res)=>{
     let { id } = req.params;
